@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDSO Kavach (TCAS) - Station Control & RFID Track Layout Simulation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="max-w-[1600px] mx-auto space-y-3">
+        
+        <!-- Header 1: Station Info & Controls -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-slate-900/90 px-4 py-3 rounded-xl border border-slate-800 shadow-xl">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600/20 border border-blue-500/40 p-2 rounded-lg text-blue-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-blue-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded tracking-wide uppercase">RDSO KAVACH v4.0</span>
+                        <span class="text-xs text-slate-400 font-mono-code">Station ID: 884 (HYB - Hyderabad)</span>
+                    </div>
+                    <h1 class="text-xl font-black text-white tracking-tight mt-0.5">KAVACH Station Control & 4-Line Yard Simulation</h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <button id="btn-start" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs transition-all shadow-lg flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6V4z"/></svg>
+                    <span>Start Train</span>
+                </button>
+                <button id="btn-os-mode" class="px-3 py-2 bg-amber-600/90 hover:bg-amber-500 text-white rounded-lg font-bold text-xs transition-all flex items-center gap-1">
+                    <span>OS Mode (15km/h)</span>
+                </button>
+                <button id="btn-theme-mode" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-bold text-xs transition-all flex items-center gap-1 dark-override-btn">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <span>Light Theme</span>
+                </button>
+                <button id="btn-reset" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg font-bold text-xs transition-all border border-slate-700">
+                    Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Integrated Header Banner 2: Modern Onboard KAVACH DMI Readout -->
+        <div class="dmi-header-bar p-3 rounded-xl">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-center">
+                
+                <!-- DMI Operational Mode Badge -->
+                <div class="flex flex-col items-center justify-center p-2 rounded-lg bg-slate-950/80 border border-slate-800 relative">
+                    <button id="btn-open-rdso" class="absolute top-1 right-1 px-1.5 py-0.5 bg-blue-600 hover:bg-blue-500 text-[8px] font-bold text-white rounded cursor-pointer z-10" onclick="document.getElementById('rdso-modal').classList.remove('hidden')">RDSO</button>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">KAVACH MODE</span>
+                    <span id="dmi-mode-badge" class="px-2.5 py-1 rounded text-xs font-black bg-blue-500/20 text-blue-400 border border-blue-500/40 text-center w-full block font-digital">FULL SUPERVISION (FS)</span>
+                </div>
+
+                <!-- Speed Gauges -->
+                <div class="flex items-center justify-around bg-slate-950/80 px-3 py-1.5 rounded-lg border border-slate-800">
+                    <div class="text-center">
+                        <div class="text-[9px] text-slate-400 font-bold uppercase">Actual Speed</div>
+                        <div class="text-2xl font-black text-cyan-400 font-digital leading-none mt-0.5" id="dmi-speed">00</div>
+                        <div class="text-[8px] text-slate-500">km/h</div>
+                    </div>
+                    <div class="h-8 w-px bg-slate-800"></div>
+                    <div class="text-center">
+                        <div class="text-[9px] text-slate-400 font-bold uppercase">Target / PSR</div>
+                        <div class="text-2xl font-black text-amber-400 font-digital leading-none mt-0.5" id="dmi-target-speed">110</div>
+                        <div class="text-[8px] text-slate-500">km/h limit</div>
+                    </div>
+                </div>
+
+                <!-- Movement Authority (MA) -->
+                <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 flex flex-col justify-between">
+                    <div class="flex justify-between text-[9px] text-slate-400 font-bold uppercase">
+                        <span>Movement Auth (MA)</span>
+                        <span id="dmi-ma-target" class="text-emerald-400 truncate max-w-[90px]">Line Clear</span>
+                    </div>
+                    <div class="text-xl font-black text-emerald-400 font-digital mt-0.5" id="dmi-ma">3200 m</div>
+                    <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden mt-1 border border-slate-800">
+                        <div id="dmi-ma-bar" class="bg-emerald-500 h-full transition-all duration-300 w-full"></div>
+                    </div>
+                </div>
+
+                <!-- Active Location & Route -->
+                <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 space-y-1 text-[10px] font-mono-code">
+                    <div class="flex justify-between"><span class="text-slate-400">Route:</span> <span id="dmi-route-name" class="text-emerald-400 font-bold">DN MAIN LINE</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">TIN:</span> <span id="dmi-tin" class="text-amber-400 font-bold">N-60</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Direction:</span> <span id="dmi-dir" class="text-cyan-300 font-bold">DN (Left -> Right)</span></div>
+                </div>
+
+                <!-- Active Tag & Point Status -->
+                <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 space-y-1 text-[10px] font-mono-code">
+                    <div class="flex justify-between"><span class="text-slate-400">RFID Tag:</span> <span id="dmi-tag" class="text-cyan-300 font-bold">R-666</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Abs Loc:</span> <span id="dmi-abs-loc" class="text-amber-400 font-bold">--- km</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Points:</span> <span id="dmi-points-status" class="text-slate-200 font-bold">P1(N), P2(N)</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Signal:</span> <span id="dmi-active-sig" class="text-emerald-400 font-bold">S1D (Green)</span></div>
+                </div>
+
+                <!-- Quick Interlocking Controls Panel -->
+                <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 flex flex-col gap-1 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] text-slate-400 font-bold">Route:</span>
+                        <select id="sel-route" class="bg-slate-900 text-emerald-400 font-bold text-[11px] rounded border border-slate-700 px-1 py-0.5">
+                            <option value="DN_MAIN" selected>DN Main (110 km/h)</option>
+                            <option value="DN_LOOP">DN Loop (30 km/h PSR)</option>
+                            <option value="UP_MAIN">UP Main (110 km/h)</option>
+                            <option value="UP_LOOP">UP Loop (30 km/h PSR)</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] text-slate-400 font-bold">Obstacle:</span>
+                        <select id="sel-obstacle" class="bg-slate-900 text-slate-200 text-[10px] rounded border border-slate-700 px-1 py-0.5">
+                            <option value="none">No Obstacle</option>
+                            <option value="block">Block Section (N-90)</option>
+                            <option value="dn_main_starter">Down Main (N-64)</option>
+                            <option value="dn_loop">Down Loop (N-65)</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        </div>
+
+        <!-- Full Width Station Layout Toolbar & Canvas -->
+        <div class="panel-card p-3 rounded-xl space-y-2">
+            
+            <div class="flex flex-wrap justify-between items-center px-1">
+                <h3 class="font-black text-sm text-slate-200 flex items-center gap-2 uppercase tracking-wide">
+                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500 glow-white"></span>
+                    Hyderabad (HYB) Station Yard Layout (4-Lines Full Width Canvas)
+                </h3>
+
+                <!-- Manual Points Controls -->
+                <div class="flex flex-wrap items-center gap-2 text-xs font-mono-code">
+                    <div class="flex items-center gap-1.5 bg-slate-950 px-2 py-1 rounded border border-slate-800">
+                        <span class="text-slate-400 text-[10px]">P1 (DN Entry):</span>
+                        <span id="txt-p1-status" class="font-bold text-emerald-400">N</span>
+                        <button id="btn-toggle-p1" class="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 text-[9px] text-slate-300 rounded border border-slate-700">Toggle</button>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 bg-slate-950 px-2 py-1 rounded border border-slate-800">
+                        <span class="text-slate-400 text-[10px]">P2 (DN Exit):</span>
+                        <span id="txt-p2-status" class="font-bold text-emerald-400">N</span>
+                        <button id="btn-toggle-p2" class="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 text-[9px] text-slate-300 rounded border border-slate-700">Toggle</button>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 bg-slate-950 px-2 py-1 rounded border border-slate-800">
+                        <span class="text-slate-400 text-[10px]">P3/P4 (UP Points):</span>
+                        <span id="txt-p3-status" class="font-bold text-emerald-400">N</span>
+                        <button id="btn-toggle-p3" class="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 text-[9px] text-slate-300 rounded border border-slate-700">Toggle</button>
+                    </div>
+
+                    <label class="flex items-center gap-1.5 cursor-pointer bg-slate-950 px-2 py-1 rounded border border-slate-800 text-[10px]">
+                        <input type="checkbox" id="chk-dir" class="rounded bg-slate-800 border-slate-700 text-blue-600">
+                        <span>UP Direction</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Extended High-DPI Track Layout Canvas -->
+            <div id="canvas-container">
+                <canvas id="simCanvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Table of Control (TOC) Inspector Panel -->
+        <div class="panel-card p-3 rounded-xl overflow-hidden">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="font-bold text-xs text-slate-200 tracking-wide uppercase">Live KAVACH Table of Control (TOC) Inspector (RDSO/SPN/196/2020 Annexure-I)</h3>
+                <span class="text-[10px] text-slate-400 font-mono-code">Interlocking Logic Verifier</span>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse toc-table font-mono-code">
+                    <thead>
+                        <tr class="bg-slate-900/90 text-slate-400 text-[10px]">
+                            <th>S.No</th>
+                            <th>Entry Signal</th>
+                            <th>Exit Signal</th>
+                            <th>Target Line</th>
+                            <th>Points Req.</th>
+                            <th>Entry Aspect</th>
+                            <th>Junction Indicator</th>
+                            <th>KAVACH PSR</th>
+                            <th>TINs Req. Free</th>
+                            <th>Overlap TIN</th>
+                            <th>RFID Sequence</th>
+                        </tr>
+                    </thead>
+                    <tbody id="toc-body" class="text-slate-300">
+                        <tr id="toc-row-0" class="transition-colors">
+                            <td>1</td>
+                            <td class="font-bold text-blue-400">S1D (Distant)</td>
+                            <td>S1 (Home)</td>
+                            <td>Approach Block</td>
+                            <td>-</td>
+                            <td><span id="toc-s1d-aspect" class="text-emerald-400 font-bold">GREEN</span></td>
+                            <td>OFF</td>
+                            <td>110 km/h</td>
+                            <td>N-62</td>
+                            <td>N/A</td>
+                            <td>(0, S-666), (250, N-668)</td>
+                        </tr>
+                        <tr id="toc-row-1" class="transition-colors">
+                            <td>2</td>
+                            <td class="font-bold text-blue-400">S1 (Home)</td>
+                            <td>S3 (Main Starter)</td>
+                            <td>DN Main Line</td>
+                            <td>P1 (NORMAL)</td>
+                            <td><span id="toc-s1-aspect" class="text-emerald-400 font-bold">GREEN</span></td>
+                            <td>OFF</td>
+                            <td>110 km/h</td>
+                            <td>N-64</td>
+                            <td>N-66 (Main Overlap)</td>
+                            <td>(0, S-514), (200, N-516)</td>
+                        </tr>
+                        <tr id="toc-row-2" class="transition-colors">
+                            <td>3</td>
+                            <td class="font-bold text-blue-400">S1 (Home)</td>
+                            <td>S5 (Loop Starter)</td>
+                            <td>DN Loop Line</td>
+                            <td>P1 (REVERSE)</td>
+                            <td><span id="toc-s1-loop-aspect" class="text-amber-400 font-bold">YELLOW</span></td>
+                            <td><span class="text-white font-bold glow-white px-1 bg-slate-800 rounded">ON (WHITE)</span></td>
+                            <td>30 km/h (PSR)</td>
+                            <td>N-64, N-65</td>
+                            <td>N-67 (Loop Overlap)</td>
+                            <td>(0, S-514), (100, T-518)</td>
+                        </tr>
+                        <tr id="toc-row-3" class="transition-colors">
+                            <td>4</td>
+                            <td class="font-bold text-blue-400">S3 / S5 (Starter)</td>
+                            <td>S7 (Adv Starter)</td>
+                            <td>Station Section</td>
+                            <td>P2 (N/R)</td>
+                            <td><span id="toc-s3-aspect" class="text-emerald-400 font-bold">GREEN</span></td>
+                            <td>OFF</td>
+                            <td>110 / 30 km/h</td>
+                            <td>N-66 / N-67</td>
+                            <td>N-90 (Block)</td>
+                            <td>(0, S-524), (300, N-526)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RDSO DMI Modal Overlay -->
+    <div id="rdso-modal" class="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center hidden backdrop-blur-sm">
+        
+        <div class="w-[800px] flex justify-between items-center mb-2">
+            <h2 class="text-white font-bold tracking-widest text-sm">RDSO KAVACH LP-OCIP (DMI) - 800x600 Authentic Layout</h2>
+            <!-- Close button -->
+            <button class="text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded text-xs font-bold transition-all" onclick="document.getElementById('rdso-modal').classList.add('hidden')">
+                CLOSE (Esc)
+            </button>
+        </div>
+
+        <!-- RDSO 800x600 DMI Container -->
+        <div class="relative bg-black border-2 border-slate-600 shadow-2xl flex-shrink-0" style="width: 800px; height: 600px; box-sizing: content-box; overflow: hidden;" id="rdso-dmi-container">
+            
+            <!-- DMI Canvas (Regions A, B, C, D, J, M) -->
+            <canvas id="dmiCanvas" width="800" height="600" class="absolute top-0 left-0 z-10 pointer-events-none"></canvas>
+
+            <!-- Static/Text Regions (E, F, G, H, I, L) -->
+            <!-- Region E: Deceleration (157x45) -->
+            <div class="absolute text-white font-sans flex items-center justify-center border border-slate-500" style="font-size: 18.67px; left: 0; top: 388px; width: 156px; height: 45px;" id="rdso-reg-e">DC 0.00</div>
+            <!-- Region F: Train Length (152x45) -->
+            <div class="absolute text-white font-sans flex items-center justify-center border border-slate-500" style="font-size: 18.67px; left: 156px; top: 388px; width: 152px; height: 45px;" id="rdso-reg-f">TL 000 m</div>
+            <!-- Region G: Operating Mode (261x45) -->
+            <div class="absolute text-white font-sans flex items-center justify-center border border-slate-500" style="font-size: 18.67px; left: 308px; top: 388px; width: 261px; height: 45px;" id="rdso-reg-g">Full Supervision Mode</div>
+            <!-- Region H: User Messages (571x69) -->
+            <div class="absolute text-white font-sans font-bold flex items-center justify-center border border-slate-500" style="font-size: 24px; left: 0; top: 433px; width: 571px; height: 69px;" id="rdso-reg-h">System Self Test in Progress</div>
+            <!-- Region I: Context Faults (571x46) -->
+            <div class="absolute text-red-500 font-sans font-bold flex items-center justify-center border border-slate-500" style="font-size: 22.67px; left: 0; top: 502px; width: 571px; height: 48px;" id="rdso-reg-i"></div>
+            <!-- Region L: Last Tag (133x61) -->
+            <div class="absolute text-white font-sans flex flex-col items-center justify-center border border-slate-500" style="font-size: 16px; left: 569px; top: 487px; width: 133px; height: 61px;" id="rdso-reg-l">
+                <div>Tid-000, Dir-N</div>
+                <div>T Dist-000</div>
+            </div>
+
+            <!-- Region K: Display Keys (800x50) -->
+            <div class="absolute flex border-t border-slate-500" style="left: 0; top: 550px; width: 800px; height: 50px;">
+                <div class="flex-1 flex items-center justify-center border-r border-slate-500 font-bold text-white text-[16px] bg-slate-900 cursor-pointer hover:bg-slate-800">P_TRP</div>
+                <div class="flex-1 flex items-center justify-center border-r border-slate-500 font-bold text-white text-[16px] bg-slate-900 cursor-pointer hover:bg-slate-800">REV</div>
+                <div class="flex-1 flex items-center justify-center border-r border-slate-500 font-bold text-white text-[16px] bg-slate-900 cursor-pointer hover:bg-slate-800">OVRD</div>
+                <div class="flex-1 flex items-center justify-center border-r border-slate-500 font-bold text-white text-[16px] bg-slate-900 cursor-pointer hover:bg-slate-800">SHNT</div>
+                <div class="flex-1 flex items-center justify-center border-r border-slate-500 font-bold text-white text-[16px] bg-slate-900 cursor-pointer hover:bg-slate-800">MBT</div>
+                <div class="flex-1 flex items-center justify-center border-r border-slate-500 font-bold text-white text-[16px] bg-slate-900 cursor-pointer hover:bg-slate-800">SR</div>
+                <div class="flex-1 flex items-center justify-center border-r border-slate-500 font-bold text-white text-[16px] bg-slate-900 cursor-pointer hover:bg-slate-800">CONFIG</div>
+                <div class="flex-1 flex items-center justify-center border-r border-slate-500 font-bold text-white text-[16px] bg-slate-900 cursor-pointer hover:bg-slate-800"></div>
+                <div class="flex-1 flex items-center justify-center border-r border-slate-500 font-bold text-white text-[16px] bg-slate-900 cursor-pointer hover:bg-slate-800">CNFM</div>
+                <div class="flex-1 flex items-center justify-center font-bold text-white text-[16px] bg-slate-900 cursor-pointer hover:bg-slate-800">INFO</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Signal Context Menu -->
+    <div id="signalContextMenu" class="hidden absolute bg-slate-900 border border-slate-600 rounded shadow-2xl flex flex-col p-1.5 z-[100] text-xs font-bold font-mono">
+        <div class="text-slate-400 text-[9px] uppercase tracking-wider mb-1 px-2 border-b border-slate-700 pb-1" id="signalMenuTitle">SIGNAL S1</div>
+        <button class="px-3 py-1.5 text-emerald-400 hover:bg-slate-700 text-left rounded transition-colors" data-aspect="GREEN">GREEN</button>
+        <button class="px-3 py-1.5 text-amber-300 hover:bg-slate-700 text-left rounded transition-colors" data-aspect="DOUBLE YELLOW">DOUBLE YELLOW</button>
+        <button class="px-3 py-1.5 text-amber-500 hover:bg-slate-700 text-left rounded transition-colors" data-aspect="YELLOW">YELLOW</button>
+        <button class="px-3 py-1.5 text-red-500 hover:bg-slate-700 text-left rounded transition-colors" data-aspect="RED">RED</button>
+        <div class="h-px bg-slate-700 my-1"></div>
+        <button class="px-3 py-1.5 text-yellow-200 hover:bg-slate-700 text-left rounded transition-colors" data-aspect="CALLING_ON">CALLING ON</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

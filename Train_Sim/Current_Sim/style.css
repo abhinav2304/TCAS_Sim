@@ -1,0 +1,110 @@
+        body {
+            background-color: #030712; /* Slate-950 deep dark */
+            color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 1rem;
+            min-height: 100vh;
+        }
+
+        .font-digital {
+            font-family: 'Chakra Petch', sans-serif;
+        }
+
+        .font-mono-code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .dmi-header-bar {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%);
+            border: 1px solid #1e293b;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+        }
+
+        .panel-card {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid #1e293b;
+            backdrop-filter: blur(10px);
+        }
+
+        #canvas-container {
+            position: relative;
+            background-color: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 0.85rem;
+            box-shadow: inset 0 0 35px rgba(0,0,0,0.95), 0 10px 25px -5px rgba(0,0,0,0.7);
+            overflow: hidden;
+            width: 100%;
+            height: 420px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Signal & Status LED Glow Effects */
+        .glow-red { box-shadow: 0 0 15px #ef4444, inset 0 0 4px #fca5a5; }
+        .glow-yellow { box-shadow: 0 0 15px #eab308, inset 0 0 4px #fef08a; }
+        .glow-green { box-shadow: 0 0 15px #22c55e, inset 0 0 4px #86efac; }
+        .glow-white { box-shadow: 0 0 15px #ffffff, inset 0 0 4px #f8fafc; }
+
+        .toc-table th, .toc-table td {
+            font-size: 0.72rem;
+            padding: 0.4rem 0.6rem;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .toc-highlight {
+            background-color: rgba(16, 185, 129, 0.12) !important;
+            border-left: 3px solid #10b981;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #030712; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+
+        /* --- LIGHT THEME OVERRIDES --- */
+        body.light-theme {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        body.light-theme .dmi-header-bar {
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(226, 232, 240, 0.98) 100%);
+            border-color: #cbd5e1;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+        }
+        body.light-theme .panel-card {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        /* Tailwind color overrides for light mode */
+        body.light-theme .bg-slate-900 { background-color: #ffffff !important; }
+        body.light-theme .bg-slate-950 { background-color: #f1f5f9 !important; }
+        body.light-theme .bg-slate-800 { background-color: #e2e8f0 !important; }
+        body.light-theme .bg-slate-700 { background-color: #cbd5e1 !important; }
+        
+        body.light-theme .border-slate-800 { border-color: #e2e8f0 !important; }
+        body.light-theme .border-slate-700 { border-color: #cbd5e1 !important; }
+        body.light-theme .border-slate-600 { border-color: #94a3b8 !important; }
+        
+        body.light-theme .text-white { color: #0f172a !important; }
+        body.light-theme .text-slate-200, 
+        body.light-theme .text-slate-300, 
+        body.light-theme .text-slate-400 { color: #334155 !important; }
+        body.light-theme .text-blue-400 { color: #2563eb !important; }
+        body.light-theme .text-emerald-400 { color: #16a34a !important; }
+        body.light-theme .text-amber-300,
+        body.light-theme .text-amber-400,
+        body.light-theme .text-yellow-400 { color: #d97706 !important; }
+        
+        /* Canvas overrides for light mode */
+        body.light-theme #canvas-container {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+        }
